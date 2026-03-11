@@ -24,6 +24,8 @@ DEBUG ?= 0
 ifeq ($(DEBUG),0)
 	ARGS += --release
 	TARGET = release
+else
+	TARGET = debug
 endif
 
 VENDORED ?= 0
@@ -40,8 +42,8 @@ distclean:
 	rm -rf .cargo vendor vendor-$(VERSION).tar.xz
 
 install:
-	$(INSTALL_PROGRAM) "./target/release/$(BIN_SD)" "$(DESTDIR)$(bindir)/$(BIN_SD)"
-	$(INSTALL_PROGRAM) "./target/release/$(BIN_SC)" "$(DESTDIR)$(bindir)/$(BIN_SC)"
+	$(INSTALL_PROGRAM) "./target/$(TARGET)/$(BIN_SD)" "$(DESTDIR)$(bindir)/$(BIN_SD)"
+	$(INSTALL_PROGRAM) "./target/$(TARGET)/$(BIN_SC)" "$(DESTDIR)$(bindir)/$(BIN_SC)"
 	$(INSTALL_DATA) "./data/$(SERVICE)" "$(DESTDIR)$(libdir)/systemd/system/$(SERVICE)"
 	$(INSTALL_DATA) "./data/$(PRESET)" "$(DESTDIR)$(libdir)/systemd/system-preset/$(PRESET)"
 	$(INSTALL_DATA) "./data/$(DBUSCFG)" "$(DESTDIR)$(datarootdir)/dbus-1/system.d/$(DBUSCFG)"
@@ -72,7 +74,7 @@ ifeq ($(VENDORED),1)
 	tar pxf vendor-$(VERSION).tar.xz
 endif
 	cargo build --features "daemon cli" $(ARGS)
-	strip -s ./target/release/$(BIN_SD)
-	strip -s ./target/release/$(BIN_SC)
+	strip -s ./target/$(TARGET)/$(BIN_SD)
+	strip -s ./target/$(TARGET)/$(BIN_SC)
 
 .PHONY: all clean distclean install uninstall update build
