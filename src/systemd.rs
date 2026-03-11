@@ -8,6 +8,7 @@ pub enum SystemdUnitAction {
     Stop,
     Start,
     Restart,
+    ResetFailed,
 }
 
 impl From<SystemdUnitAction> for &str {
@@ -16,6 +17,7 @@ impl From<SystemdUnitAction> for &str {
             SystemdUnitAction::Stop => "stop",
             SystemdUnitAction::Start => "start",
             SystemdUnitAction::Restart => "restart",
+            SystemdUnitAction::ResetFailed => "reset-failed",
         }
     }
 }

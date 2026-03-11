@@ -11,6 +11,8 @@ use pci_device::GfxVendor;
 
 use crate::{error::GfxError, pci_device::GfxMode, special_asus::*};
 
+use crate::{systemd::*};
+
 /// The configuration for graphics. This should be saved and loaded on boot.
 pub mod config;
 mod config_old;
@@ -193,40 +195,27 @@ fn do_driver_action(driver: &str, action: DriverAction) -> Result<(), GfxError> 
     Ok(())
 }
 
+pub fn toggle_systemd_unit(run: bool, unit: &str) -> Result<(), GfxError> {
+    let cmd = if run {
+        let _ = do_systemd_unit_action(SystemdUnitAction::ResetFailed, unit);
+        SystemdUnitAction::Start
+    } else {
+        SystemdUnitAction::Stop
+    };
+
+    return do_systemd_unit_action(cmd, unit);
+}
+
 pub fn toggle_nvidia_powerd(run: bool, vendor: GfxVendor) -> Result<(), GfxError> {
     if vendor == GfxVendor::Nvidia {
-        let mut cmd = Command::new("systemctl");
-        if run {
-            cmd.arg("start");
-        } else {
-            cmd.arg("stop");
-        }
-        cmd.arg("nvidia-powerd.service");
-
-        let status = cmd.status()?;
-        if !status.success() {
-            warn!("{run} nvidia-powerd.service failed: {:?}", status.code());
-        }
-        debug!("Did {:?}", cmd.get_args());
+        return toggle_systemd_unit(run, "nvidia-powerd.service");
     }
     Ok(())
 }
 
 pub fn toggle_nvidia_persistenced(run: bool, vendor: GfxVendor) -> Result<(), GfxError> {
     if vendor == GfxVendor::Nvidia {
-        let mut cmd = Command::new("systemctl");
-        if run {
-            cmd.arg("start");
-        } else {
-            cmd.arg("stop");
-        }
-        cmd.arg("nvidia-persistenced.service");
-
-        let status = cmd.status()?;
-        if !status.success() {
-            warn!("{run} nvidia-persistenced.service failed: {:?}", status.code());
-        }
-        debug!("Did {:?}", cmd.get_args());
+        return toggle_systemd_unit(run, "nvidia-persistenced.service");
     }
     Ok(())
 }
